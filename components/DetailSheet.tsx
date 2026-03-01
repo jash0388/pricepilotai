@@ -258,29 +258,23 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                             </div>
                         </div>
 
-                        {/* Price Summary Cards */}
+                        {/* Price Summary Cards — always show all 3 */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
-                            {result.data.bus > 0 && (
-                                <div onClick={() => setTravelTab('Bus')} style={{ background: travelTab === 'Bus' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
-                                    <div style={{ fontSize: 24, marginBottom: 6 }}>🚌</div>
-                                    <div style={{ fontSize: 12, color: travelTab === 'Bus' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Bus</div>
-                                    <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Bus' ? '#fff' : '#1A1A1A' }}>₹{result.data.bus.toLocaleString()}</div>
-                                </div>
-                            )}
-                            {result.data.train > 0 && (
-                                <div onClick={() => setTravelTab('Train')} style={{ background: travelTab === 'Train' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
-                                    <div style={{ fontSize: 24, marginBottom: 6 }}>🚂</div>
-                                    <div style={{ fontSize: 12, color: travelTab === 'Train' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Train</div>
-                                    <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Train' ? '#fff' : '#1A1A1A' }}>₹{result.data.train.toLocaleString()}</div>
-                                </div>
-                            )}
-                            {result.data.flight > 0 && (
-                                <div onClick={() => setTravelTab('Flight')} style={{ background: travelTab === 'Flight' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
-                                    <div style={{ fontSize: 24, marginBottom: 6 }}>✈️</div>
-                                    <div style={{ fontSize: 12, color: travelTab === 'Flight' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Flight</div>
-                                    <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Flight' ? '#fff' : '#1A1A1A' }}>₹{result.data.flight.toLocaleString()}</div>
-                                </div>
-                            )}
+                            <div onClick={() => setTravelTab('Bus')} style={{ background: travelTab === 'Bus' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                <div style={{ fontSize: 24, marginBottom: 6 }}>🚌</div>
+                                <div style={{ fontSize: 12, color: travelTab === 'Bus' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Bus</div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Bus' ? '#fff' : '#1A1A1A' }}>{result.data.bus > 0 ? `₹${result.data.bus.toLocaleString()}` : '—'}</div>
+                            </div>
+                            <div onClick={() => setTravelTab('Train')} style={{ background: travelTab === 'Train' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                <div style={{ fontSize: 24, marginBottom: 6 }}>🚂</div>
+                                <div style={{ fontSize: 12, color: travelTab === 'Train' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Train</div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Train' ? '#fff' : '#1A1A1A' }}>{result.data.train > 0 ? `₹${result.data.train.toLocaleString()}` : '—'}</div>
+                            </div>
+                            <div onClick={() => setTravelTab('Flight')} style={{ background: travelTab === 'Flight' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                <div style={{ fontSize: 24, marginBottom: 6 }}>✈️</div>
+                                <div style={{ fontSize: 12, color: travelTab === 'Flight' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Flight</div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Flight' ? '#fff' : '#1A1A1A' }}>{result.data.flight > 0 ? `₹${result.data.flight.toLocaleString()}` : '—'}</div>
+                            </div>
                         </div>
 
                         {/* Cheapest recommendation */}
