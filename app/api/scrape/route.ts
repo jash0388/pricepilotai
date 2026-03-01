@@ -50,6 +50,13 @@ export async function GET(req: NextRequest) {
             .replace(/\s+Online\s+at\s+Best\s+Price.*$/i, '')
             .trim()
 
+        // Reject bad/generic titles from JS-rendered sites
+        const badTitles = ['site maintenance', 'access denied', 'just a moment', 'page not found', '404', 'error', 'loading', 'please wait', 'under maintenance', 'forbidden', 'login', 'myntra', 'flipkart']
+        const titleLower = title.toLowerCase()
+        if (badTitles.some(bad => titleLower === bad || titleLower.includes(bad)) && title.length < 30) {
+            title = '' // Force fallback to URL slug
+        }
+
         // Image: og:image
         const image = getMetaContent('og:image') || getMetaContent('twitter:image')
 

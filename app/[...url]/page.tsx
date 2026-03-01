@@ -56,28 +56,31 @@ export default function URLInterceptorPage() {
         const qs = searchParams.toString()
         if (qs) url += '?' + qs
 
-        // Step 1: Scrape the actual product page for real data
+        // Always extract name from URL first as reliable fallback
+        const fallbackName = extractNameFromUrl(url)
+        const platform = detectPlatform(url)
+
+        // Set fallback immediately so we have something
+        setSearchQuery(fallbackName)
+        setProductInfo({
+            title: fallbackName,
+            image: '',
+            price: 0,
+            platform,
+        })
+
+        // Then try scraping for better data
         scrapeUrl(url).then(scraped => {
-            if (scraped && scraped.title) {
+            if (scraped && scraped.title && scraped.title.length > 3) {
                 setProductInfo({
                     title: scraped.title,
                     image: scraped.image || '',
                     price: scraped.price || 0,
-                    platform: scraped.platform || 'Unknown',
+                    platform: scraped.platform || platform,
                 })
-                // Use the REAL product title for searching
                 setSearchQuery(scraped.title)
-            } else {
-                // Fallback: extract from URL slug
-                const fallbackName = extractNameFromUrl(url)
-                setSearchQuery(fallbackName)
-                setProductInfo({
-                    title: fallbackName,
-                    image: '',
-                    price: 0,
-                    platform: detectPlatform(url),
-                })
             }
+            // If scrape returns empty/bad title, we already have the fallback set
         })
     }, [params.url, searchParams])
 
@@ -174,31 +177,56 @@ export default function URLInterceptorPage() {
 function extractNameFromUrl(url: string): string {
     const lower = url.toLowerCase()
 
-    // Amazon: /product-name/dp/ASIN
-    if (lower.includes('amazon')) {
-        const m = url.match(/\/(.*)\/dp\/[A-Z0-9]{10}/)
-        if (m) return m[1].replace(/-/g, ' ').split(' ').slice(0, 7).join(' ')
-    }
+    try {
+        const u = new URL(url)
+        const path = u.pathname
 
-    // Flipkart: /product-name/p/itm...
-    if (lower.includes('flipkart')) {
-        const m = url.match(/\/(.*)\/p\/itm/i)
-        if (m) return m[1].replace(/-/g, ' ')
-    }
+        // Amazon: /product-name/dp/ASIN
+        if (lower.includes('amazon')) {
+            const m = path.match(/\/([^\/]+)\/dp\/[A-Z0-9]{10}/i)
+            if (m) return decodeURIComponent(m[1]).replace(/-/g, ' ').split(' ').slice(0, 8).join(' ')
+        }
 
-    // Myntra: /brand/product-name/12345/buy
-    if (lower.includes('myntra')) {
-        const m = url.match(/myntra\.com\/[^/]+\/([^/]+)\//i)
-        if (m) return m[1].replace(/-/g, ' ')
-    }
+        // Flipkart: /product-name/p/itm...
+        if (lower.includes('flipkart')) {
+            const m = path.match(/\/([^\/]+)\/p\/itm/i)
+            if (m) return decodeURIComponent(m[1]).replace(/-/g, ' ')
+        }
 
-    // Meesho, Ajio, generic
-    const pathParts = new URL(url).pathname.split('/').filter(Boolean)
-    if (pathParts.length > 1) {
-        return pathParts.slice(0, 3).join(' ').replace(/-/g, ' ')
-    }
+        // Myntra: /brand/product-name/12345/buy
+        if (lower.includes('myntra')) {
+            const parts = path.split('/').filter(Boolean)
+            if (parts.length >= 2) {
+                const brand = decodeURIComponent(parts[0]).replace(/-/g, ' ')
+                const slug = decodeURIComponent(parts[1]).replace(/-/g, ' ')
+                return `${brand} ${slug}`
+            }
+        }
 
-    return 'Product'
+        // Ajio
+        if (lower.includes('ajio')) {
+            const parts = path.split('/').filter(Boolean)
+            const last = parts[parts.length - 1] || ''
+            return decodeURIComponent(last).replace(/-/g, ' ').replace(/\bp\d+\b/g, '').trim()
+        }
+
+        // Meesho: /product-name/p/id
+        if (lower.includes('meesho')) {
+            const m = path.match(/\/([^\/]+)\/p\//i)
+            if (m) return decodeURIComponent(m[1]).replace(/-/g, ' ')
+        }
+
+        // Generic: take the longest meaningful path segment
+        const pathParts = path.split('/').filter(p => p && p.length > 3 && !/^\d+$/.test(p))
+        if (pathParts.length > 0) {
+            const longestPart = pathParts.sort((a, b) => b.length - a.length)[0]
+            return decodeURIComponent(longestPart).replace(/-/g, ' ').split(' ').slice(0, 8).join(' ')
+        }
+
+        return 'Product'
+    } catch {
+        return 'Product'
+    }
 }
 
 function detectPlatform(url: string): string {
