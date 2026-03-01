@@ -61,7 +61,11 @@ export default function URLInterceptorPage() {
                 id = url.match(/\/dp\/([A-Z0-9]{10})/)?.[1] || url.match(/\/gp\/product\/([A-Z0-9]{10})/)?.[1] || ''
                 // Extract name from /name-here/dp/
                 const nameMatch = url.match(/\/(.*)\/dp\/[A-Z0-9]{10}/)
-                if (nameMatch) name = nameMatch[1].replace(/-/g, ' ')
+                if (nameMatch) {
+                    const fullSlug = nameMatch[1].replace(/-/g, ' ')
+                    // Take only the first 7 words to avoid ultra-long Amazon SEO titles
+                    name = fullSlug.split(' ').slice(0, 7).join(' ')
+                }
             } else if (lowerUrl.includes('flipkart')) {
                 p = 'Flipkart'
                 id = url.match(/pid=([^&]+)/)?.[1] || ''
