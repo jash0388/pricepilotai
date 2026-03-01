@@ -39,9 +39,40 @@ export function detectCategory(q: string) {
     return 'Electronics'
 }
 
-export function parseRoute(q: string, cityMap: Record<string, any>) {
-    const s = q.toLowerCase().replace(' to ', ' ').replace(' -> ', ' ').replace('-', ' ')
-    const parts = s.split(/\s+/).filter(p => cityMap[p])
-    if (parts.length >= 2) return { from: parts[0], to: parts[1] }
+export function parseRoute(q: string, cityMap: Record<string, any>, aliases?: Record<string, string>) {
+    const s = q.toLowerCase()
+        .replace(/\s+to\s+/g, ' ')
+        .replace(/\s*->\s*/g, ' ')
+        .replace(/\s*→\s*/g, ' ')
+        .replace(/-/g, ' ')
+        .trim()
+    const parts = s.split(/\s+/)
+
+    // Resolve each word through aliases, then cityMap, then prefix matching
+    const resolveCity = (word: string): string | null => {
+        // Direct match in cityMap
+        if (cityMap[word]) return word
+        // Alias match
+        if (aliases && aliases[word]) {
+            const resolved = aliases[word]
+            if (cityMap[resolved]) return resolved
+        }
+        // Prefix match (e.g., "bang" matches "bangalore")
+        const cityNames = Object.keys(cityMap)
+        const prefixMatch = cityNames.find(c => c.startsWith(word) && word.length >= 3)
+        if (prefixMatch) return prefixMatch
+        return null
+    }
+
+    const resolved: string[] = []
+    for (const part of parts) {
+        const city = resolveCity(part)
+        if (city && !resolved.includes(city)) {
+            resolved.push(city)
+        }
+        if (resolved.length >= 2) break
+    }
+
+    if (resolved.length >= 2) return { from: resolved[0], to: resolved[1] }
     return null
 }

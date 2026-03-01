@@ -13,7 +13,7 @@ import DetailSheet from '@/components/DetailSheet'
 import BrewingState from '@/components/BrewingState'
 
 // Libs
-import { CITY_MAP, PRODUCT_CARDS, PRODUCT_CATEGORIES } from '@/lib/constants'
+import { CITY_MAP, CITY_ALIASES, PRODUCT_CARDS, PRODUCT_CATEGORIES } from '@/lib/constants'
 import {
   makePriceHistory,
   detectCategory,
@@ -102,7 +102,7 @@ export default function PricePilot() {
   const runTravel = useCallback(async (q: string, date: string, members: number) => {
     setLoading(true); setResult(null); setSearchResults(null); setAiText(''); setErrMsg(''); setCorrected(null)
     try {
-      const route = parseRoute(q, CITY_MAP)
+      const route = parseRoute(q, CITY_MAP, CITY_ALIASES)
       if (!route) throw new Error('Please enter a valid route, e.g. "Mumbai to Bangalore" or "Delhi Goa"')
 
       const from = CITY_MAP[route.from]
@@ -167,7 +167,7 @@ export default function PricePilot() {
     if (mode === 'product') {
       runProduct(fixed)
     } else {
-      const route = parseRoute(fixed, CITY_MAP)
+      const route = parseRoute(fixed, CITY_MAP, CITY_ALIASES)
       if (!route) {
         setErrMsg('Please enter a valid route, e.g. "Mumbai to Bangalore"')
         setLoading(false)

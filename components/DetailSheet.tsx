@@ -250,35 +250,35 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
 
                 {result.type === 'travel' && (
                     <div>
-                        <div style={{ marginBottom: 40 }}>
-                            <div style={{ fontSize: 14, color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12, opacity: 0.7 }}>Travel Route</div>
-                            <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(28px, 6vw, 44px)', fontWeight: 400, color: '#1A1A1A', lineHeight: 1.1, marginBottom: 12 }}>{result.data.route}</h2>
-                            <div style={{ fontSize: 15, color: '#666' }}>
+                        <div style={{ marginBottom: 28 }}>
+                            <div style={{ fontSize: 13, color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 10, opacity: 0.7 }}>Travel Route</div>
+                            <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 400, color: '#1A1A1A', lineHeight: 1.1, marginBottom: 10 }}>{result.data.route}</h2>
+                            <div style={{ fontSize: 14, color: '#666' }}>
                                 📅 {result.data.date} • 👥 {result.data.members} {result.data.members > 1 ? 'passengers' : 'passenger'}
                             </div>
                         </div>
 
-                        {/* Price Comparison Cards */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 32 }}>
+                        {/* Price Summary Cards */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
                             {result.data.bus > 0 && (
-                                <div style={{ background: '#FFFFFF', padding: 20, borderRadius: 24, border: '1px solid rgba(0,0,0,0.03)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: 28, marginBottom: 8 }}>🚌</div>
-                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 600, marginBottom: 8 }}>Bus</div>
-                                    <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.bus.toLocaleString()}</div>
+                                <div onClick={() => setTravelTab('Bus')} style={{ background: travelTab === 'Bus' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                    <div style={{ fontSize: 24, marginBottom: 6 }}>🚌</div>
+                                    <div style={{ fontSize: 12, color: travelTab === 'Bus' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Bus</div>
+                                    <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Bus' ? '#fff' : '#1A1A1A' }}>₹{result.data.bus.toLocaleString()}</div>
                                 </div>
                             )}
-                            {result.hasTrains && result.data.train > 0 && (
-                                <div style={{ background: '#FFFFFF', padding: 20, borderRadius: 24, border: '1px solid rgba(0,0,0,0.03)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: 28, marginBottom: 8 }}>🚂</div>
-                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 600, marginBottom: 8 }}>Train</div>
-                                    <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.train.toLocaleString()}</div>
+                            {result.data.train > 0 && (
+                                <div onClick={() => setTravelTab('Train')} style={{ background: travelTab === 'Train' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                    <div style={{ fontSize: 24, marginBottom: 6 }}>🚂</div>
+                                    <div style={{ fontSize: 12, color: travelTab === 'Train' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Train</div>
+                                    <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Train' ? '#fff' : '#1A1A1A' }}>₹{result.data.train.toLocaleString()}</div>
                                 </div>
                             )}
-                            {result.hasFlights && result.data.flight > 0 && (
-                                <div style={{ background: '#FFFFFF', padding: 20, borderRadius: 24, border: '1px solid rgba(0,0,0,0.03)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: 28, marginBottom: 8 }}>✈️</div>
-                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 600, marginBottom: 8 }}>Flight</div>
-                                    <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.flight.toLocaleString()}</div>
+                            {result.data.flight > 0 && (
+                                <div onClick={() => setTravelTab('Flight')} style={{ background: travelTab === 'Flight' ? '#1A1A1A' : '#FFFFFF', padding: '16px 12px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                    <div style={{ fontSize: 24, marginBottom: 6 }}>✈️</div>
+                                    <div style={{ fontSize: 12, color: travelTab === 'Flight' ? '#fff' : '#666', fontWeight: 600, marginBottom: 4 }}>Flight</div>
+                                    <div style={{ fontSize: 18, fontWeight: 700, color: travelTab === 'Flight' ? '#fff' : '#1A1A1A' }}>₹{result.data.flight.toLocaleString()}</div>
                                 </div>
                             )}
                         </div>
@@ -287,42 +287,105 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                         {(() => {
                             const options = [
                                 result.data.bus > 0 ? { mode: 'Bus 🚌', price: result.data.bus } : null,
-                                result.hasTrains && result.data.train > 0 ? { mode: 'Train 🚂', price: result.data.train } : null,
-                                result.hasFlights && result.data.flight > 0 ? { mode: 'Flight ✈️', price: result.data.flight } : null,
+                                result.data.train > 0 ? { mode: 'Train 🚂', price: result.data.train } : null,
+                                result.data.flight > 0 ? { mode: 'Flight ✈️', price: result.data.flight } : null,
                             ].filter(Boolean) as { mode: string; price: number }[]
                             const cheapest = options.sort((a, b) => a.price - b.price)[0]
                             if (!cheapest) return null
                             return (
-                                <div style={{ background: '#E6F9F1', borderRadius: 20, padding: '16px 24px', marginBottom: 32, display: 'flex', alignItems: 'center', gap: 12 }}>
-                                    <span style={{ fontSize: 20 }}>💡</span>
-                                    <span style={{ fontSize: 15, fontWeight: 600, color: '#059669' }}>
+                                <div style={{ background: '#E6F9F1', borderRadius: 16, padding: '14px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <span style={{ fontSize: 18 }}>💡</span>
+                                    <span style={{ fontSize: 14, fontWeight: 600, color: '#059669' }}>
                                         Best deal: {cheapest.mode} at ₹{cheapest.price.toLocaleString()}
                                     </span>
                                 </div>
                             )
                         })()}
 
+                        {/* Individual listings per tab */}
+                        <div style={{ marginBottom: 28 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A' }}>
+                                    {travelTab === 'Bus' ? '🚌 Bus Options' : travelTab === 'Train' ? '🚂 Train Options' : '✈️ Flight Options'}
+                                </h3>
+                                <div style={{ height: 1, flex: 1, background: 'rgba(0,0,0,0.06)' }} />
+                            </div>
+
+                            {travelTab === 'Bus' && result.data.busDetails?.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    {result.data.busDetails.slice(0, 5).map((bus: any, idx: number) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', background: idx === 0 ? '#1A1A1A' : '#FFFFFF', borderRadius: 16, border: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.04)' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: 15, fontWeight: 600, color: idx === 0 ? '#FFF' : '#1A1A1A', marginBottom: 2 }}>{bus.operator || bus.name || 'Bus Operator'}</div>
+                                                {bus.departure && <div style={{ fontSize: 12, color: idx === 0 ? 'rgba(255,255,255,0.7)' : '#999' }}>{bus.departure} • {bus.type || 'AC'}</div>}
+                                                {idx === 0 && <span style={{ fontSize: 9, background: 'rgba(255,255,255,0.2)', color: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700, marginTop: 4, display: 'inline-block' }}>CHEAPEST</span>}
+                                            </div>
+                                            <div style={{ fontSize: 18, fontWeight: 700, color: idx === 0 ? '#FFF' : '#1A1A1A', marginRight: 12 }}>₹{Math.round(bus.price * result.data.members).toLocaleString()}</div>
+                                        </div>
+                                    ))}
+                                    <a href={`https://www.redbus.in/bus-tickets/${result.data.route.split(' → ')[0]?.toLowerCase()}-to-${result.data.route.split(' → ')[1]?.toLowerCase()}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: '#00c853', color: '#fff', borderRadius: 16, textDecoration: 'none', fontWeight: 700, fontSize: 14, marginTop: 4 }}>
+                                        🚌 Book on RedBus <ExternalLink size={14} />
+                                    </a>
+                                </div>
+                            ) : travelTab === 'Train' && result.data.trainDetails?.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    {result.data.trainDetails.slice(0, 5).map((train: any, idx: number) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', background: idx === 0 ? '#1A1A1A' : '#FFFFFF', borderRadius: 16, border: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.04)' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: 15, fontWeight: 600, color: idx === 0 ? '#FFF' : '#1A1A1A', marginBottom: 2 }}>{train.name || train.trainName || 'Train'}</div>
+                                                {train.departure && <div style={{ fontSize: 12, color: idx === 0 ? 'rgba(255,255,255,0.7)' : '#999' }}>{train.departure} → {train.arrival || ''} • {train.class || 'SL'}</div>}
+                                                {idx === 0 && <span style={{ fontSize: 9, background: 'rgba(255,255,255,0.2)', color: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700, marginTop: 4, display: 'inline-block' }}>CHEAPEST</span>}
+                                            </div>
+                                            <div style={{ fontSize: 18, fontWeight: 700, color: idx === 0 ? '#FFF' : '#1A1A1A', marginRight: 12 }}>₹{Math.round(train.price * result.data.members).toLocaleString()}</div>
+                                        </div>
+                                    ))}
+                                    <a href="https://www.irctc.co.in" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: '#00e5ff', color: '#000', borderRadius: 16, textDecoration: 'none', fontWeight: 700, fontSize: 14, marginTop: 4 }}>
+                                        🚂 Book on IRCTC <ExternalLink size={14} />
+                                    </a>
+                                </div>
+                            ) : travelTab === 'Flight' && result.data.flightDetails?.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    {result.data.flightDetails.slice(0, 5).map((flight: any, idx: number) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', background: idx === 0 ? '#1A1A1A' : '#FFFFFF', borderRadius: 16, border: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.04)' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: 15, fontWeight: 600, color: idx === 0 ? '#FFF' : '#1A1A1A', marginBottom: 2 }}>{flight.airline || flight.carrier || 'Airline'}</div>
+                                                {flight.departure && <div style={{ fontSize: 12, color: idx === 0 ? 'rgba(255,255,255,0.7)' : '#999' }}>{flight.departure} → {flight.arrival || ''}</div>}
+                                                {idx === 0 && <span style={{ fontSize: 9, background: 'rgba(255,255,255,0.2)', color: 'white', padding: '2px 6px', borderRadius: 4, fontWeight: 700, marginTop: 4, display: 'inline-block' }}>CHEAPEST</span>}
+                                            </div>
+                                            <div style={{ fontSize: 18, fontWeight: 700, color: idx === 0 ? '#FFF' : '#1A1A1A', marginRight: 12 }}>₹{Math.round((flight.price || 0) * result.data.members).toLocaleString()}</div>
+                                        </div>
+                                    ))}
+                                    <a href="https://www.makemytrip.com/flights/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: '#ff9f0a', color: '#000', borderRadius: 16, textDecoration: 'none', fontWeight: 700, fontSize: 14, marginTop: 4 }}>
+                                        ✈️ Book on MakeMyTrip <ExternalLink size={14} />
+                                    </a>
+                                </div>
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: 24, color: '#999', fontSize: 14 }}>
+                                    No {travelTab.toLowerCase()} options available for this route.
+                                </div>
+                            )}
+                        </div>
+
                         {/* AI Verdict */}
                         <div style={{
                             background: 'linear-gradient(135deg, #FF6B35 0%, #FF5A1F 100%)',
-                            borderRadius: 32,
-                            padding: 'clamp(24px, 4vw, 40px)',
-                            marginBottom: 32,
+                            borderRadius: 24,
+                            padding: 'clamp(20px, 4vw, 32px)',
                             position: 'relative',
                             overflow: 'hidden',
-                            boxShadow: '0 20px 40px rgba(255, 90, 31, 0.2)'
+                            boxShadow: '0 16px 32px rgba(255, 90, 31, 0.2)'
                         }}>
                             <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, position: 'relative' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 12 }}>
-                                    <BrainCircuit size={20} color="#FFF" />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, position: 'relative' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 10 }}>
+                                    <BrainCircuit size={18} color="#FFF" />
                                 </div>
-                                <span style={{ fontSize: 13, fontWeight: 700, color: '#FFF', textTransform: 'uppercase', letterSpacing: 1.5 }}>Price Pilot Verdict</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: '#FFF', textTransform: 'uppercase', letterSpacing: 1.5 }}>Price Pilot Verdict</span>
                             </div>
                             {aiLoading ? (
-                                <div style={{ fontSize: 18, fontWeight: 500, color: '#FFF', opacity: 0.9 }}>Brewing insights...</div>
+                                <div style={{ fontSize: 16, fontWeight: 500, color: '#FFF', opacity: 0.9 }}>Brewing insights...</div>
                             ) : (
-                                <div style={{ fontSize: 18, lineHeight: 1.5, fontWeight: 500, color: '#FFF', position: 'relative' }}>
+                                <div style={{ fontSize: 16, lineHeight: 1.5, fontWeight: 500, color: '#FFF', position: 'relative' }}>
                                     "{aiText}"
                                 </div>
                             )}
