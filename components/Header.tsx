@@ -28,10 +28,10 @@ export default function Header({ mode, setMode, resetSearch }: HeaderProps) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <div
                     onClick={resetSearch}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
                 >
+                    <img src="/logo.png" alt="Price Pilot" style={{ width: 32, height: 32, borderRadius: 8 }} />
                     <div style={{ fontFamily: 'var(--serif)', fontSize: 22, color: '#1A1A1A', letterSpacing: -0.5, fontWeight: 400, fontStyle: 'italic' }}>Price Pilot</div>
-                    <div style={{ fontSize: 9, background: '#1A1A1A', color: '#fff', borderRadius: 4, padding: '2px 5px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>PRO</div>
                 </div>
 
                 {/* Mode toggle — sits in the same row on the right */}
