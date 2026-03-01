@@ -179,9 +179,12 @@ export default function PricePilot() {
 
   const completeBrewing = async () => {
     setIsBrewing(false)
-    // Find the iPhone 15 card or fallback to first card
-    const bestMatch = PRODUCT_CARDS.find(c => c.id.includes('iphone')) || PRODUCT_CARDS[0]
-    clickCard(bestMatch)
+    if (brewingQuery) {
+      runProduct(brewingQuery)
+    } else {
+      const bestMatch = PRODUCT_CARDS.find(c => c.id.includes('iphone')) || PRODUCT_CARDS[0]
+      clickCard(bestMatch)
+    }
   }
 
   const clickCard = useCallback(async (item: any) => {

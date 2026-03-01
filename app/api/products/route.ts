@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
         rating: item.rating || null,
         thumbnail: item.thumbnail
       }))
-      .filter((s: any) => s.price > 1000) // Basic sanity check for high-value items
+      .filter((s: any) => s.price > 0)
       .sort((a: any, b: any) => a.price - b.price)
 
     const products = sourceItems

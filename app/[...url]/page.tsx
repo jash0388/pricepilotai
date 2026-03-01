@@ -50,23 +50,32 @@ export default function URLInterceptorPage() {
             if (qs) url += '?' + qs
             setReconstructedUrl(url)
 
-            // Platform Detection
+            // Platform Detection & Name Extraction
             const lowerUrl = url.toLowerCase()
             let p = 'Product'
             let id = ''
+            let name = ''
 
             if (lowerUrl.includes('amazon')) {
                 p = 'Amazon'
                 id = url.match(/\/dp\/([A-Z0-9]{10})/)?.[1] || url.match(/\/gp\/product\/([A-Z0-9]{10})/)?.[1] || ''
+                // Extract name from /name-here/dp/
+                const nameMatch = url.match(/\/(.*)\/dp\/[A-Z0-9]{10}/)
+                if (nameMatch) name = nameMatch[1].replace(/-/g, ' ')
             } else if (lowerUrl.includes('flipkart')) {
                 p = 'Flipkart'
                 id = url.match(/pid=([^&]+)/)?.[1] || ''
+                // Extract name from /name-here/p/
+                const nameMatch = url.match(/\/(.*)\/p\/itm/i)
+                if (nameMatch) name = nameMatch[1].replace(/-/g, ' ')
             } else if (lowerUrl.includes('meesho')) {
                 p = 'Meesho'
             }
 
             setPlatform(p)
             setProductId(id)
+            // Use name if found, it's MUCH better for search results than just an ID
+            setReconstructedUrl(name || id || p)
         }
     }, [params.url, searchParams])
 
@@ -110,8 +119,8 @@ export default function URLInterceptorPage() {
 
     const completeBrewing = () => {
         setIsBrewing(false)
-        // Use the most specific identifier we have
-        clickCard(productId || platform || reconstructedUrl)
+        // reconstructedUrl now contains the extracted name if possible
+        clickCard(reconstructedUrl || productId || platform)
     }
 
     return (
