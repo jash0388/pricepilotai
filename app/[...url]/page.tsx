@@ -193,13 +193,15 @@ function extractNameFromUrl(url: string): string {
             if (m) return decodeURIComponent(m[1]).replace(/-/g, ' ')
         }
 
-        // Myntra: /brand/product-name/12345/buy
+        // Myntra: /category/brand/product-slug/12345/buy
         if (lower.includes('myntra')) {
             const parts = path.split('/').filter(Boolean)
-            if (parts.length >= 2) {
-                const brand = decodeURIComponent(parts[0]).replace(/-/g, ' ')
-                const slug = decodeURIComponent(parts[1]).replace(/-/g, ' ')
-                return `${brand} ${slug}`
+            // Myntra URL structure: [category, brand, product-slug, id, buy]
+            if (parts.length >= 3) {
+                const productSlug = decodeURIComponent(parts[2]).replace(/-/g, ' ')
+                return productSlug
+            } else if (parts.length >= 2) {
+                return decodeURIComponent(parts[1]).replace(/-/g, ' ')
             }
         }
 
