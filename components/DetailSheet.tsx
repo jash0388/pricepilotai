@@ -48,12 +48,12 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                 onClick={e => e.stopPropagation()}
                 style={{
                     background: '#F5F5F0',
-                    borderRadius: '48px 48px 0 0',
+                    borderRadius: '32px 32px 0 0',
                     width: '100%',
                     maxWidth: 800,
                     maxHeight: '94vh',
                     overflowY: 'auto',
-                    padding: '40px',
+                    padding: 'clamp(20px, 4vw, 40px)',
                     position: 'relative',
                     boxShadow: '0 -20px 80px rgba(0,0,0,0.1)'
                 }}
@@ -85,11 +85,11 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
 
                 {result.type === 'product' && (
                     <div>
-                        <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', marginBottom: 48 }}>
+                        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 32, flexWrap: 'wrap' }}>
                             <div style={{ position: 'relative' }}>
                                 <div style={{
-                                    width: 140,
-                                    height: 140,
+                                    width: 100,
+                                    height: 100,
                                     background: '#FFFFFF',
                                     borderRadius: 32,
                                     display: 'flex',
@@ -111,9 +111,9 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
 
                             <div style={{ flex: 1, paddingTop: 8 }}>
                                 <div style={{ fontSize: 14, color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12, opacity: 0.7 }}>{result.data.category || 'Product'}</div>
-                                <h2 style={{ fontFamily: 'var(--serif)', fontSize: 44, fontWeight: 400, color: '#1A1A1A', lineHeight: 1.1, marginBottom: 12 }}>{result.data.name}</h2>
+                                <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 400, color: '#1A1A1A', lineHeight: 1.1, marginBottom: 12 }}>{result.data.name}</h2>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                                    <span style={{ fontSize: 40, fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.currentPrice.toLocaleString()}</span>
+                                    <span style={{ fontSize: 'clamp(24px, 5vw, 36px)', fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.currentPrice.toLocaleString()}</span>
                                     <span style={{ fontSize: 14, color: '#10B981', fontWeight: 600, background: '#E6F9F1', padding: '4px 10px', borderRadius: 8 }}>
                                         Lowest in 30d
                                     </span>
@@ -121,7 +121,7 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginBottom: 40 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 32 }}>
                             <div style={{ background: '#FFFFFF', padding: 24, borderRadius: 32, border: '1px solid rgba(0,0,0,0.03)', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
                                 <div style={{ fontSize: 12, color: '#999', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>Price Pulse</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -154,9 +154,9 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
 
                         <div style={{
                             background: 'linear-gradient(135deg, #FF6B35 0%, #FF5A1F 100%)',
-                            borderRadius: 40,
-                            padding: '40px',
-                            marginBottom: 40,
+                            borderRadius: 28,
+                            padding: 'clamp(20px, 4vw, 40px)',
+                            marginBottom: 32,
                             position: 'relative',
                             overflow: 'hidden',
                             boxShadow: '0 30px 60px rgba(255, 90, 31, 0.2)'
@@ -244,6 +244,88 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                                     </a>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {result.type === 'travel' && (
+                    <div>
+                        <div style={{ marginBottom: 40 }}>
+                            <div style={{ fontSize: 14, color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 12, opacity: 0.7 }}>Travel Route</div>
+                            <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(28px, 6vw, 44px)', fontWeight: 400, color: '#1A1A1A', lineHeight: 1.1, marginBottom: 12 }}>{result.data.route}</h2>
+                            <div style={{ fontSize: 15, color: '#666' }}>
+                                📅 {result.data.date} • 👥 {result.data.members} {result.data.members > 1 ? 'passengers' : 'passenger'}
+                            </div>
+                        </div>
+
+                        {/* Price Comparison Cards */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 32 }}>
+                            {result.data.bus > 0 && (
+                                <div style={{ background: '#FFFFFF', padding: 20, borderRadius: 24, border: '1px solid rgba(0,0,0,0.03)', textAlign: 'center' }}>
+                                    <div style={{ fontSize: 28, marginBottom: 8 }}>🚌</div>
+                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 600, marginBottom: 8 }}>Bus</div>
+                                    <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.bus.toLocaleString()}</div>
+                                </div>
+                            )}
+                            {result.hasTrains && result.data.train > 0 && (
+                                <div style={{ background: '#FFFFFF', padding: 20, borderRadius: 24, border: '1px solid rgba(0,0,0,0.03)', textAlign: 'center' }}>
+                                    <div style={{ fontSize: 28, marginBottom: 8 }}>🚂</div>
+                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 600, marginBottom: 8 }}>Train</div>
+                                    <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.train.toLocaleString()}</div>
+                                </div>
+                            )}
+                            {result.hasFlights && result.data.flight > 0 && (
+                                <div style={{ background: '#FFFFFF', padding: 20, borderRadius: 24, border: '1px solid rgba(0,0,0,0.03)', textAlign: 'center' }}>
+                                    <div style={{ fontSize: 28, marginBottom: 8 }}>✈️</div>
+                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 600, marginBottom: 8 }}>Flight</div>
+                                    <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A' }}>₹{result.data.flight.toLocaleString()}</div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Cheapest recommendation */}
+                        {(() => {
+                            const options = [
+                                result.data.bus > 0 ? { mode: 'Bus 🚌', price: result.data.bus } : null,
+                                result.hasTrains && result.data.train > 0 ? { mode: 'Train 🚂', price: result.data.train } : null,
+                                result.hasFlights && result.data.flight > 0 ? { mode: 'Flight ✈️', price: result.data.flight } : null,
+                            ].filter(Boolean) as { mode: string; price: number }[]
+                            const cheapest = options.sort((a, b) => a.price - b.price)[0]
+                            if (!cheapest) return null
+                            return (
+                                <div style={{ background: '#E6F9F1', borderRadius: 20, padding: '16px 24px', marginBottom: 32, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <span style={{ fontSize: 20 }}>💡</span>
+                                    <span style={{ fontSize: 15, fontWeight: 600, color: '#059669' }}>
+                                        Best deal: {cheapest.mode} at ₹{cheapest.price.toLocaleString()}
+                                    </span>
+                                </div>
+                            )
+                        })()}
+
+                        {/* AI Verdict */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, #FF6B35 0%, #FF5A1F 100%)',
+                            borderRadius: 32,
+                            padding: 'clamp(24px, 4vw, 40px)',
+                            marginBottom: 32,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            boxShadow: '0 20px 40px rgba(255, 90, 31, 0.2)'
+                        }}>
+                            <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, position: 'relative' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 12 }}>
+                                    <BrainCircuit size={20} color="#FFF" />
+                                </div>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: '#FFF', textTransform: 'uppercase', letterSpacing: 1.5 }}>Price Pilot Verdict</span>
+                            </div>
+                            {aiLoading ? (
+                                <div style={{ fontSize: 18, fontWeight: 500, color: '#FFF', opacity: 0.9 }}>Brewing insights...</div>
+                            ) : (
+                                <div style={{ fontSize: 18, lineHeight: 1.5, fontWeight: 500, color: '#FFF', position: 'relative' }}>
+                                    "{aiText}"
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

@@ -279,13 +279,13 @@ export default function PricePilot() {
         </div>
 
         {mode === 'product' ? (
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 40, flexWrap: 'wrap', gap: 24 }}>
               <div>
                 <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase', marginBottom: 12 }}>
                   {searchResults ? `Found ${searchResults.length} matches` : 'Trending Assets'}
                 </div>
-                <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 36, letterSpacing: -0.5 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(24px, 5vw, 36px)', letterSpacing: -0.5 }}>
                   {searchResults ? `Results for "${query}"` : 'Top Researched Products'}
                 </div>
               </div>
@@ -317,7 +317,7 @@ export default function PricePilot() {
 
             <motion.div
               layout
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 24 }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}
             >
               {(searchResults || filteredCards).map((item: any) => (
                 <ProductCard

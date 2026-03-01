@@ -15,7 +15,7 @@ export default function TravelSection({ results, doSearch }: TravelSectionProps)
     ]
 
     return (
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 28px 100px' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 20px 80px' }}>
             <div style={{ marginBottom: 40 }}>
                 <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase', marginBottom: 12 }}>Popular Routes</div>
                 <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 32, letterSpacing: -1, marginBottom: 24 }}>Trending Trips</div>
@@ -41,7 +41,7 @@ export default function TravelSection({ results, doSearch }: TravelSectionProps)
                         onClick={() => doSearch(r.r)}
                     >
                         <div style={{ fontSize: 48, marginBottom: 24, textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 20, padding: 32 }}>{r.icon}</div>
-                        <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#1A1A1A', display: 'flex', alignItems: 'center', gap: 8 }}>
                             <MapPin size={18} color="var(--accent)" /> {r.r}
                         </div>
                         <div style={{ fontSize: 24, fontWeight: 800, color: '#00c853', marginBottom: 16 }}>buses from ₹{r.p}</div>
