@@ -139,7 +139,7 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                                 </div>
                             </div>
                             <div style={{ background: '#FFFFFF', padding: 24, borderRadius: 32, border: '1px solid rgba(0,0,0,0.03)', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                                <div style={{ fontSize: 12, color: '#999', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>PPI Intelligence</div>
+                                <div style={{ fontSize: 12, color: '#999', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>Price Pilot Intelligence</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <div style={{ width: 48, height: 48, borderRadius: 16, background: '#F5F5F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <BrainCircuit size={24} color="#1A1A1A" />
@@ -167,7 +167,7 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                                 <div style={{ background: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: 14 }}>
                                     <BrainCircuit size={24} color="#FFF" />
                                 </div>
-                                <span style={{ fontSize: 15, fontWeight: 700, color: '#FFF', textTransform: 'uppercase', letterSpacing: 1.5 }}>PPI Verdict</span>
+                                <span style={{ fontSize: 15, fontWeight: 700, color: '#FFF', textTransform: 'uppercase', letterSpacing: 1.5 }}>Price Pilot Verdict</span>
                             </div>
 
                             {aiLoading ? (

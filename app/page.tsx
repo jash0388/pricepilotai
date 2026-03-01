@@ -138,7 +138,7 @@ export default function PricePilot() {
       setResult({ type: 'travel', data, hasTrains, hasFlights })
       setLoading(false)
       setAiLoading(true)
-      const txt = await getAI(`You are PPI AI. 3-sentence travel booking insight for ${members} people on ${date}. No markdown.\nRoute: ${data.route}\nBus: ₹${busPrice}\n${hasTrains ? `Train: ₹${trainPrice}\n` : ''}${hasFlights ? `Flight: ₹${flightPrice}\n` : ''}`)
+      const txt = await getAI(`You are Price Pilot AI. 3-sentence travel booking insight for ${members} people on ${date}. No markdown.\nRoute: ${data.route}\nBus: ₹${busPrice}\n${hasTrains ? `Train: ₹${trainPrice}\n` : ''}${hasFlights ? `Flight: ₹${flightPrice}\n` : ''}`)
       setAiText(txt); setAiLoading(false)
     } catch (err: any) {
       setErrMsg(err.message); setLoading(false)
@@ -216,7 +216,7 @@ export default function PricePilot() {
       setLoadingId(null)
 
       setAiLoading(true)
-      const txt = await getAI(`You are PPI AI. 3-sentence product insight, clear buy/wait recommendation. No markdown.\nProduct: ${data.name}\nBest price: ₹${data.currentPrice.toLocaleString()}\nStore: ${data.stores[0]?.name}\nTrend: ${trend.trend}`)
+      const txt = await getAI(`You are Price Pilot AI. 3-sentence product insight, clear buy/wait recommendation. No markdown.\nProduct: ${data.name}\nBest price: ₹${data.currentPrice.toLocaleString()}\nStore: ${data.stores[0]?.name}\nTrend: ${trend.trend}`)
       setAiText(txt); setAiLoading(false)
     } catch (err: any) {
       console.error('Click error:', err)

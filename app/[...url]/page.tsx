@@ -130,7 +130,7 @@ export default function URLInterceptorPage() {
 
                 {errMsg && (
                     <>
-                        <div style={{ fontFamily: 'var(--serif)', fontSize: 32, marginBottom: 40, color: '#1A1A1A' }}>PPI</div>
+                        <div style={{ fontFamily: 'var(--serif)', fontSize: 32, marginBottom: 40, color: '#1A1A1A' }}>Price Pilot</div>
                         <div style={{ color: '#ff6b6b', marginTop: 40, fontSize: 16 }}>
                             {errMsg}
                         </div>

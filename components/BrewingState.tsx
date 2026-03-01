@@ -59,7 +59,7 @@ export default function BrewingState({ query, onComplete }: BrewingStateProps) {
             }}
         >
             <div style={{ width: '100%', maxWidth: 500, padding: 24 }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 32, marginBottom: 40, color: '#1A1A1A' }}>PPI</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 32, marginBottom: 40, color: '#1A1A1A' }}>Price Pilot</div>
 
                 <div style={{ background: '#FFFFFF', borderRadius: 24, padding: 24, marginBottom: 24, border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                     <div style={{ fontSize: 13, color: '#666', marginBottom: 12, fontWeight: 500 }}>You're Looking for:</div>

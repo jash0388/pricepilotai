@@ -15,7 +15,7 @@ export default function Hero({ mode }: HeroProps) {
                 transition={{ duration: 0.5 }}
                 style={{ fontSize: 13, color: '#666', marginBottom: 16, fontWeight: 500, letterSpacing: 0.5 }}
             >
-                PPI AI — Effortless Intelligence
+                Price Pilot AI — Effortless Intelligence
             </motion.div>
 
             <motion.h1

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'PPI — AI Price Intelligence',
+  title: 'Price Pilot — AI Price Intelligence',
   description: 'Know when and where to buy. AI-powered price decisions.',
 }
 

@@ -27,7 +27,7 @@ export default function Header({ mode, setMode, resetSearch }: HeaderProps) {
                 onClick={resetSearch}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
             >
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 26, color: '#1A1A1A', letterSpacing: -0.5, fontWeight: 400 }}>PPI</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 26, color: '#1A1A1A', letterSpacing: -0.5, fontWeight: 400 }}>Price Pilot</div>
                 <div style={{ fontSize: 10, background: '#1A1A1A', color: '#fff', borderRadius: 4, padding: '2px 6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>PRO</div>
             </div>
 
