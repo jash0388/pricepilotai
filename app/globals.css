@@ -149,4 +149,20 @@ h3,
   .hero-title {
     font-size: 36px !important;
   }
+
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .premium-card {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .btn-primary {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
 }

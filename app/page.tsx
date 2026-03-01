@@ -414,6 +414,7 @@ export default function PricePilot() {
         {isBrewing && (
           <BrewingState
             query={brewingQuery}
+            productInfo={null}
             onComplete={completeBrewing}
           />
         )}

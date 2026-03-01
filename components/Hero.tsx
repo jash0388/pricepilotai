@@ -8,7 +8,7 @@ interface HeroProps {
 
 export default function Hero({ mode }: HeroProps) {
     return (
-        <div style={{ maxWidth: 840, margin: '100px auto 40px', padding: '0 28px', textAlign: 'center', position: 'relative' }}>
+        <div style={{ maxWidth: 840, margin: '60px auto 30px', padding: '0 20px', textAlign: 'center', position: 'relative' }}>
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -39,7 +39,7 @@ export default function Hero({ mode }: HeroProps) {
                 style={{ color: '#666', fontSize: 18, marginBottom: 48, maxWidth: 540, marginInline: 'auto', lineHeight: 1.5, fontWeight: 400 }}
             >
                 {mode === 'product'
-                    ? 'Enter a product name or paste a URL from Amazon/Flipkart to brew your personalized research report.'
+                    ? 'Enter a product name or paste a URL from Amazon, Flipkart, or Myntra to brew your personalized research report.'
                     : 'The only tool you need to find the cheapest flights, trains, and buses for your next journey.'}
             </motion.p>
         </div>

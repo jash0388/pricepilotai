@@ -50,7 +50,7 @@ export default function SearchSection({ mode, query, setQuery, loading, doSearch
                             border: 'none',
                             outline: 'none',
                             color: '#1A1A1A',
-                            fontSize: 18,
+                            fontSize: 16,
                             fontFamily: 'inherit',
                             fontWeight: 400
                         }}

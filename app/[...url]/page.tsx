@@ -6,14 +6,22 @@ import Header from '@/components/Header'
 import BrewingState from '@/components/BrewingState'
 import DetailSheet from '@/components/DetailSheet'
 import { makePriceHistory, analyzeTrend, detectCategory } from '@/lib/utils'
-import { PRODUCT_CARDS } from '@/lib/constants'
 
-// Copying necessary fetchers from main page for now
 async function fetchProduct(q: string) {
     const res = await fetch(`/api/products?q=${encodeURIComponent(q)}`)
     const data = await res.json()
     if (!res.ok || data.error) throw new Error(data.error || 'Fetch failed')
     return data
+}
+
+async function scrapeUrl(url: string) {
+    try {
+        const res = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`)
+        const data = await res.json()
+        return data
+    } catch {
+        return null
+    }
 }
 
 async function getAI(prompt: string) {
@@ -32,61 +40,50 @@ export default function URLInterceptorPage() {
     const params = useParams()
     const searchParams = useSearchParams()
     const [isBrewing, setIsBrewing] = useState(true)
-    const [reconstructedUrl, setReconstructedUrl] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
+    const [productInfo, setProductInfo] = useState<{ title: string; image: string; price: number; platform: string } | null>(null)
     const [result, setResult] = useState<any>(null)
     const [aiText, setAiText] = useState('')
     const [aiLoading, setAiLoading] = useState(false)
     const [errMsg, setErrMsg] = useState('')
     const [mode, setMode] = useState<'product' | 'travel'>('product')
 
-    const [platform, setPlatform] = useState('')
-    const [productId, setProductId] = useState('')
-
     useEffect(() => {
-        if (params.url) {
-            const segments = Array.isArray(params.url) ? params.url : [params.url]
-            let url = 'https://' + segments.join('/')
-            const qs = searchParams.toString()
-            if (qs) url += '?' + qs
-            setReconstructedUrl(url)
+        if (!params.url) return
 
-            // Platform Detection & Name Extraction
-            const lowerUrl = url.toLowerCase()
-            let p = 'Product'
-            let id = ''
-            let name = ''
+        const segments = Array.isArray(params.url) ? params.url : [params.url]
+        let url = 'https://' + segments.join('/')
+        const qs = searchParams.toString()
+        if (qs) url += '?' + qs
 
-            if (lowerUrl.includes('amazon')) {
-                p = 'Amazon'
-                id = url.match(/\/dp\/([A-Z0-9]{10})/)?.[1] || url.match(/\/gp\/product\/([A-Z0-9]{10})/)?.[1] || ''
-                // Extract name from /name-here/dp/
-                const nameMatch = url.match(/\/(.*)\/dp\/[A-Z0-9]{10}/)
-                if (nameMatch) {
-                    const fullSlug = nameMatch[1].replace(/-/g, ' ')
-                    // Take only the first 7 words to avoid ultra-long Amazon SEO titles
-                    name = fullSlug.split(' ').slice(0, 7).join(' ')
-                }
-            } else if (lowerUrl.includes('flipkart')) {
-                p = 'Flipkart'
-                id = url.match(/pid=([^&]+)/)?.[1] || ''
-                // Extract name from /name-here/p/
-                const nameMatch = url.match(/\/(.*)\/p\/itm/i)
-                if (nameMatch) name = nameMatch[1].replace(/-/g, ' ')
-            } else if (lowerUrl.includes('meesho')) {
-                p = 'Meesho'
+        // Step 1: Scrape the actual product page for real data
+        scrapeUrl(url).then(scraped => {
+            if (scraped && scraped.title) {
+                setProductInfo({
+                    title: scraped.title,
+                    image: scraped.image || '',
+                    price: scraped.price || 0,
+                    platform: scraped.platform || 'Unknown',
+                })
+                // Use the REAL product title for searching
+                setSearchQuery(scraped.title)
+            } else {
+                // Fallback: extract from URL slug
+                const fallbackName = extractNameFromUrl(url)
+                setSearchQuery(fallbackName)
+                setProductInfo({
+                    title: fallbackName,
+                    image: '',
+                    price: 0,
+                    platform: detectPlatform(url),
+                })
             }
-
-            setPlatform(p)
-            setProductId(id)
-            // Use name if found, it's MUCH better for search results than just an ID
-            setReconstructedUrl(name || id || p)
-        }
+        })
     }, [params.url, searchParams])
 
-    const clickCard = useCallback(async (q: string) => {
+    const doSearch = useCallback(async (q: string) => {
         setAiText(''); setErrMsg('')
         try {
-            // Using the extracted ID or URL as search query
             const resp = await fetchProduct(q)
             const results = resp.results || []
 
@@ -95,8 +92,8 @@ export default function URLInterceptorPage() {
             }
 
             const data = {
-                name: results[0].name,
-                image: results[0].thumbnail || results[0].image,
+                name: productInfo?.title || results[0].name,
+                image: productInfo?.image || results[0].thumbnail || results[0].image,
                 currentPrice: results[0].price,
                 category: detectCategory(results[0].name),
                 stores: results.map((r: any) => ({
@@ -114,17 +111,18 @@ export default function URLInterceptorPage() {
             setResult({ type: 'product', data, trend, confidence: score })
 
             setAiLoading(true)
-            const txt = await getAI(`You are PricePilot AI. 3-sentence product insight, clear buy/wait recommendation. No markdown.\nProduct: ${data.name}\nBest price: ₹${data.currentPrice.toLocaleString()}\nStore: ${data.stores[0]?.name}\nTrend: ${trend.trend}`)
+            const txt = await getAI(`You are Price Pilot AI. 3-sentence product insight, clear buy/wait recommendation. No markdown.\nProduct: ${data.name}\nBest price: ₹${data.currentPrice.toLocaleString()}\nStore: ${data.stores[0]?.name}\nTrend: ${trend.trend}`)
             setAiText(txt); setAiLoading(false)
         } catch (err: any) {
             setErrMsg('Price Intelligence unavailable: ' + err.message)
         }
-    }, [])
+    }, [productInfo])
 
     const completeBrewing = () => {
         setIsBrewing(false)
-        // reconstructedUrl now contains the extracted name if possible
-        clickCard(reconstructedUrl || productId || platform)
+        if (searchQuery) {
+            doSearch(searchQuery)
+        }
     }
 
     return (
@@ -135,7 +133,8 @@ export default function URLInterceptorPage() {
                 <AnimatePresence>
                     {isBrewing && (
                         <BrewingState
-                            query={reconstructedUrl}
+                            query={searchQuery || 'Analyzing product...'}
+                            productInfo={productInfo}
                             onComplete={completeBrewing}
                         />
                     )}
@@ -169,4 +168,45 @@ export default function URLInterceptorPage() {
             </AnimatePresence>
         </div>
     )
+}
+
+// Helpers
+function extractNameFromUrl(url: string): string {
+    const lower = url.toLowerCase()
+
+    // Amazon: /product-name/dp/ASIN
+    if (lower.includes('amazon')) {
+        const m = url.match(/\/(.*)\/dp\/[A-Z0-9]{10}/)
+        if (m) return m[1].replace(/-/g, ' ').split(' ').slice(0, 7).join(' ')
+    }
+
+    // Flipkart: /product-name/p/itm...
+    if (lower.includes('flipkart')) {
+        const m = url.match(/\/(.*)\/p\/itm/i)
+        if (m) return m[1].replace(/-/g, ' ')
+    }
+
+    // Myntra: /brand/product-name/12345/buy
+    if (lower.includes('myntra')) {
+        const m = url.match(/myntra\.com\/[^/]+\/([^/]+)\//i)
+        if (m) return m[1].replace(/-/g, ' ')
+    }
+
+    // Meesho, Ajio, generic
+    const pathParts = new URL(url).pathname.split('/').filter(Boolean)
+    if (pathParts.length > 1) {
+        return pathParts.slice(0, 3).join(' ').replace(/-/g, ' ')
+    }
+
+    return 'Product'
+}
+
+function detectPlatform(url: string): string {
+    const l = url.toLowerCase()
+    if (l.includes('amazon')) return 'Amazon'
+    if (l.includes('flipkart')) return 'Flipkart'
+    if (l.includes('myntra')) return 'Myntra'
+    if (l.includes('meesho')) return 'Meesho'
+    if (l.includes('ajio')) return 'Ajio'
+    return 'Unknown'
 }
