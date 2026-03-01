@@ -32,7 +32,9 @@ async function fetchProduct(q: string) {
 async function fetchFlights(origin: string, dest: string, dates: string[]) {
   const res = await fetch(`/api/flights?origin=${origin}&destination=${dest}&dates=${encodeURIComponent(dates.join(','))}`)
   const data = await res.json()
-  return data.error ? null : data.prices
+  if (data.error) return null
+  // New format returns { flights: [...], prices: [...] }
+  return data.flights || data.prices || null
 }
 
 async function fetchTrains(from: string, to: string, date: string) {
@@ -118,9 +120,9 @@ export default function PricePilot() {
       const hasFlights = !!flightData?.length
       const hasBuses = !!busData?.length
 
-      const busPrice = hasBuses ? Math.round(busData[0].price * members) : 0
       const trainPrice = hasTrains ? Math.round(trainData[0].price * members) : 0
       const flightPrice = hasFlights ? Math.round((flightData[0]?.price || 0) * members) : 0
+      const busPrice = hasBuses ? Math.round(busData[0].price * members) : 0
 
       const data = {
         route: `${route.from.toUpperCase()} → ${route.to.toUpperCase()}`,
