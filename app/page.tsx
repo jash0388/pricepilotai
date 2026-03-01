@@ -124,6 +124,8 @@ export default function PricePilot() {
 
       const data = {
         route: `${route.from.toUpperCase()} → ${route.to.toUpperCase()}`,
+        fromCity: route.from,
+        toCity: route.to,
         bus: busPrice,
         train: trainPrice,
         flight: flightPrice,

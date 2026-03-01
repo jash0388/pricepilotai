@@ -317,7 +317,7 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                                             <div style={{ fontSize: 18, fontWeight: 700, color: idx === 0 ? '#FFF' : '#1A1A1A', marginRight: 12 }}>₹{Math.round(bus.price * result.data.members).toLocaleString()}</div>
                                         </div>
                                     ))}
-                                    <a href={`https://www.redbus.in/bus-tickets/${result.data.route.split(' → ')[0]?.toLowerCase()}-to-${result.data.route.split(' → ')[1]?.toLowerCase()}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: '#00c853', color: '#fff', borderRadius: 16, textDecoration: 'none', fontWeight: 700, fontSize: 14, marginTop: 4 }}>
+                                    <a href={`https://www.redbus.in/bus-tickets/${result.data.fromCity || 'source'}-to-${result.data.toCity || 'destination'}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', background: '#00c853', color: '#fff', borderRadius: 16, textDecoration: 'none', fontWeight: 700, fontSize: 14, marginTop: 4 }}>
                                         🚌 Book on RedBus <ExternalLink size={14} />
                                     </a>
                                 </div>
