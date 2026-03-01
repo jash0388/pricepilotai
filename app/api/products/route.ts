@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const SERP_KEY = process.env.SERP_KEY!
+const SERP_KEY = '9d259f5b72bc8bac35f6e2a76be3d62b0ec48b22ec699b91ff1f798df922db83'
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get('q')

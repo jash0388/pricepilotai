@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const AMADEUS_ID = process.env.AMADEUS_ID!
-const AMADEUS_SEC = process.env.AMADEUS_SEC!
+const AMADEUS_ID = 'H5r44VLJKzvEbdnh00SSyKPcp4mdzGsx'
+const AMADEUS_SEC = 'IHGOzGFxiAr1FgLj'
 
 let cachedToken: string | null = null
 let tokenExpiry = 0
