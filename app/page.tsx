@@ -86,16 +86,19 @@ export default function PricePilot() {
   const [travelReq, setTravelReq] = useState<{ origin: string, dest: string, date: string, members: number } | null>(null)
   const [travelTab, setTravelTab] = useState<'Bus' | 'Flight' | 'Train'>('Bus')
   const [corrected, setCorrected] = useState<string | null>(null)
-  const [isBrewing, setIsBrewing] = useState(false)
   const [brewingQuery, setBrewingQuery] = useState('')
   const [resultSource, setResultSource] = useState<'live' | 'estimated' | null>(null)
+  const [showResults, setShowResults] = useState(false)
+  const [isDataReady, setIsDataReady] = useState(false)
+  const [isBrewingFinished, setIsBrewingFinished] = useState(false)
 
   const runProduct = useCallback(async (q: string) => {
-    setLoading(true); setResult(null); setSearchResults(null); setAiText(''); setErrMsg(''); setCorrected(null)
+    setLoading(true); setAiText(''); setErrMsg(''); setCorrected(null); setIsDataReady(false)
     try {
       const data = await fetchProduct(q)
       setSearchResults(data.results)
       setResultSource(data.source)
+      setIsDataReady(true)
       setLoading(false)
     } catch (err: any) {
       setErrMsg(err.message); setLoading(false)
@@ -148,10 +151,11 @@ export default function PricePilot() {
       }
 
       setResult({ type: 'travel', data, hasTrains, hasFlights, source: overallSource })
+      setIsDataReady(true)
       setLoading(false)
 
       // Only brew if not already brewing (some travel searches might trigger directly)
-      if (!isBrewing) {
+      if (!brewingQuery) {
         setAiLoading(true)
         const txt = await getAI(`You are Price Pilot AI. 3-sentence travel booking insight for ${members} people on ${date}. No markdown.\nRoute: ${data.route}\nBus: ₹${busPrice}\n${hasTrains ? `Train: ₹${trainPrice}\n` : ''}${hasFlights ? `Flight: ₹${flightPrice}\n` : ''}`)
         setAiText(txt); setAiLoading(false)
@@ -169,11 +173,13 @@ export default function PricePilot() {
     // Trigger brewing for ALL product searches for the "cool" factor
     if (mode === 'product') {
       setBrewingQuery(q)
-      setIsBrewing(true)
+      setIsBrewingFinished(false)
+      setIsDataReady(false)
+      setShowResults(true)
+      runProduct(q)
       return
     }
 
-    // Travel brewing integration
     const route = parseRoute(q, CITY_MAP, CITY_ALIASES)
     if (!route) {
       setErrMsg('Please enter a valid route, e.g. "Mumbai to Bangalore"')
@@ -183,16 +189,19 @@ export default function PricePilot() {
     setTravelReq({ origin: route.from, dest: route.to, date: new Date().toISOString().split('T')[0], members: 1 })
   }
 
-  const completeBrewing = async () => {
-    setIsBrewing(false)
-    if (!brewingQuery) return
-
-    if (mode === 'product') {
-      runProduct(brewingQuery)
-    } else if (travelReq) {
-      runTravel(brewingQuery, travelReq.date, travelReq.members)
-      setTravelReq(null)
+  // Effect to close brewing ONLY when both animation and data are ready
+  useEffect(() => {
+    if (isBrewingFinished && isDataReady) {
+      // Small delay for smooth transition
+      setTimeout(() => {
+        setBrewingQuery('')
+        setIsBrewingFinished(false)
+      }, 300)
     }
+  }, [isBrewingFinished, isDataReady])
+
+  const completeBrewing = async () => {
+    setIsBrewingFinished(true)
   }
 
   const clickCard = useCallback(async (item: any) => {
@@ -243,6 +252,8 @@ export default function PricePilot() {
     setQuery('')
     setSearchResults(null)
     setCorrected(null)
+    setShowResults(false)
+    setIsDataReady(false)
   }
 
   return (
@@ -250,114 +261,129 @@ export default function PricePilot() {
       <Header mode={mode} setMode={setMode} resetSearch={resetSearchState} />
 
       <main style={{ paddingBottom: 100 }}>
-        <Hero mode={mode} />
-
-        <div style={{ maxWidth: 840, margin: '0 auto 40px', padding: '0 28px', textAlign: 'center' }}>
-          <SearchSection
-            mode={mode}
-            query={query}
-            setQuery={setQuery}
-            loading={loading}
-            doSearch={doSearch}
-          />
-
-          <AnimatePresence>
-            {corrected && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ marginTop: -40, marginBottom: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--accent)', fontSize: 13, fontWeight: 500 }}
-              >
-                <Sparkles size={16} /> AI corrected to <strong>"{corrected}"</strong>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {errMsg && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                style={{ background: '#ff4d6d11', border: '1px solid #ff4d6d33', borderRadius: 14, padding: '14px 18px', color: '#ff6b6b', fontSize: 14, marginBottom: 28, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}
-              >
-                <AlertTriangle size={18} /> {errMsg}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {mode === 'product' ? (
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 40, flexWrap: 'wrap', gap: 24 }}>
-              <div>
-                <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase', marginBottom: 12 }}>
-                  {searchResults ? `Found ${searchResults.length} matches` : 'Trending Assets'}
-                </div>
-                <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(24px, 5vw, 36px)', letterSpacing: -0.5 }}>
-                  {searchResults ? `Results for "${query}"` : 'Top Researched Products'}
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                {searchResults && (
-                  <button onClick={() => { setSearchResults(null); setQuery('') }}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 12, padding: '8px 16px', color: 'var(--accent)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
-                    ✕ Clear Results
-                  </button>
+        {!showResults ? (
+          <>
+            <Hero mode={mode} />
+            <div style={{ maxWidth: 840, margin: '0 auto 40px', padding: '0 28px', textAlign: 'center' }}>
+              <SearchSection
+                mode={mode}
+                query={query}
+                setQuery={setQuery}
+                loading={loading}
+                doSearch={doSearch}
+              />
+              <AnimatePresence>
+                {corrected && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ marginTop: -40, marginBottom: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--accent)', fontSize: 13, fontWeight: 500 }}
+                  >
+                    <Sparkles size={16} /> AI corrected to <strong>"{corrected}"</strong>
+                  </motion.div>
                 )}
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', padding: 6, borderRadius: 16, border: '1px solid var(--border)' }}>
-                  {PRODUCT_CATEGORIES.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => { setCat(c); setSearchResults(null) }}
-                      style={{
-                        cursor: 'pointer', border: '1px solid var(--border)', borderRadius: '12px', padding: '8px 20px', fontSize: '13px', fontWeight: 500,
-                        background: cat === c ? '#1A1A1A' : '#FFFFFF',
-                        color: cat === c ? '#FFFFFF' : '#666666', transition: 'all 0.2s',
-                        boxShadow: cat === c ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
-                      }}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              </AnimatePresence>
+              <AnimatePresence>
+                {errMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    style={{ background: '#ff4d6d11', border: '1px solid #ff4d6d33', borderRadius: 14, padding: '14px 18px', color: '#ff6b6b', fontSize: 14, marginBottom: 28, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}
+                  >
+                    <AlertTriangle size={18} /> {errMsg}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-
-            <motion.div
-              layout
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}
-            >
-              {(searchResults || filteredCards).map((item: any) => (
-                <ProductCard
-                  key={item.id}
-                  item={item}
-                  loadingId={loadingId}
-                  onClick={(clickedItem) => {
-                    if (searchResults) {
-                      const trend = analyzeTrend(makePriceHistory(clickedItem.price).map(h => h.p))
-                      setResult({
-                        type: 'product',
-                        data: {
-                          name: clickedItem.name,
-                          image: clickedItem.image || clickedItem.thumbnail,
-                          currentPrice: clickedItem.price,
-                          category: detectCategory(clickedItem.name),
-                          stores: [{ name: clickedItem.store, price: clickedItem.price, link: clickedItem.link }],
-                          history: makePriceHistory(clickedItem.price)
-                        },
-                        trend,
-                        confidence: clickedItem.isTrusted ? 95 : 65,
-                        source: resultSource || 'live'
-                      })
-                    } else {
-                      clickCard(clickedItem)
-                    }
-                  }}
-                />
-              ))}
-            </motion.div>
-          </div>
+          </>
         ) : (
+          <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg)', padding: '20px 0', borderBottom: '1px solid var(--border)', marginBottom: 40 }}>
+            <div style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px' }}>
+              <SearchSection
+                mode={mode}
+                query={query}
+                setQuery={setQuery}
+                loading={loading}
+                doSearch={doSearch}
+              />
+            </div>
+          </div>
+        )}
+
+        {showResults && (
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
+            {mode === 'product' ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 40, flexWrap: 'wrap', gap: 24 }}>
+                  <div>
+                    <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase', marginBottom: 12 }}>
+                      {searchResults ? `Found ${searchResults.length} matches` : 'AI Intelligent Search'}
+                    </div>
+                    <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(24px, 5vw, 36px)', letterSpacing: -0.5 }}>
+                      {searchResults ? `Results for "${query}"` : 'Analyzing Research Assets...'}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <button onClick={resetSearchState}
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 12, padding: '8px 16px', color: 'var(--accent)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+                      ✕ Home
+                    </button>
+                  </div>
+                </div>
+
+                <motion.div
+                  layout
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}
+                >
+                  {(searchResults || []).map((item: any) => (
+                    <ProductCard
+                      key={item.id}
+                      item={item}
+                      loadingId={loadingId}
+                      onClick={(clickedItem) => {
+                        if (searchResults) {
+                          const trend = analyzeTrend(makePriceHistory(clickedItem.price).map(h => h.p))
+                          setResult({
+                            type: 'product',
+                            data: {
+                              name: clickedItem.name,
+                              image: clickedItem.image || clickedItem.thumbnail,
+                              currentPrice: clickedItem.price,
+                              category: detectCategory(clickedItem.name),
+                              stores: [{ name: clickedItem.store, price: clickedItem.price, link: clickedItem.link }],
+                              history: makePriceHistory(clickedItem.price)
+                            },
+                            trend,
+                            confidence: clickedItem.isTrusted ? 95 : 65,
+                            source: resultSource || 'live'
+                          })
+                        } else {
+                          clickCard(clickedItem)
+                        }
+                      }}
+                    />
+                  ))}
+                </motion.div>
+              </>
+            ) : (
+              <TravelSection results={[]} doSearch={doSearch} />
+            )}
+          </div>
+        )}
+
+        {!showResults && mode === 'product' && (
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
+            <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase', marginBottom: 12 }}>Trending Assets</div>
+            <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 36, marginBottom: 40 }}>Top Researched Products</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
+              {filteredCards.map((item: any) => (
+                <ProductCard key={item.id} item={item} loadingId={loadingId} onClick={() => clickCard(item)} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!showResults && mode === 'travel' && (
           <TravelSection results={[]} doSearch={doSearch} />
         )}
       </main>
@@ -413,7 +439,11 @@ export default function PricePilot() {
                 <button onClick={() => setTravelReq(null)} style={{ flex: 1, background: 'transparent', border: '1px solid var(--border)', borderRadius: 12, padding: 14, color: 'var(--text-dim)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
                 <button onClick={() => {
                   setBrewingQuery(query || travelReq.origin + ' to ' + travelReq.dest);
-                  setIsBrewing(true);
+                  setIsBrewingFinished(false)
+                  setIsDataReady(false)
+                  setShowResults(true)
+                  runTravel(query || travelReq.origin + ' to ' + travelReq.dest, travelReq.date, travelReq.members)
+                  setTravelReq(null)
                 }}
                   className="btn-primary" style={{ flex: 2, padding: 14, justifyContent: 'center' }}>Analyze Route</button>
               </div>
@@ -423,7 +453,7 @@ export default function PricePilot() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {isBrewing && (
+        {brewingQuery && (
           <BrewingState
             query={brewingQuery}
             productInfo={null}

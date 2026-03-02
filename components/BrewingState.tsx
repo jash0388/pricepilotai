@@ -41,13 +41,13 @@ export default function BrewingState({ query, productInfo, onComplete }: Brewing
             setProgress(prev => {
                 if (prev >= 100) {
                     clearInterval(timer)
-                    setTimeout(onComplete, 800)
+                    setTimeout(onComplete, 400) // Shorter delay after finish
                     return 100
                 }
-                const next = prev + Math.random() * 12
+                const next = prev + Math.random() * 20 + 5 // Faster increments
                 return Math.min(next, 100)
             })
-        }, 1400)
+        }, 350) // Faster interval (350ms)
 
         return () => clearInterval(timer)
     }, [onComplete])
