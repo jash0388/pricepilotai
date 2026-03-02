@@ -149,9 +149,13 @@ export default function PricePilot() {
 
       setResult({ type: 'travel', data, hasTrains, hasFlights, source: overallSource })
       setLoading(false)
-      setAiLoading(true)
-      const txt = await getAI(`You are Price Pilot AI. 3-sentence travel booking insight for ${members} people on ${date}. No markdown.\nRoute: ${data.route}\nBus: ₹${busPrice}\n${hasTrains ? `Train: ₹${trainPrice}\n` : ''}${hasFlights ? `Flight: ₹${flightPrice}\n` : ''}`)
-      setAiText(txt); setAiLoading(false)
+
+      // Only brew if not already brewing (some travel searches might trigger directly)
+      if (!isBrewing) {
+        setAiLoading(true)
+        const txt = await getAI(`You are Price Pilot AI. 3-sentence travel booking insight for ${members} people on ${date}. No markdown.\nRoute: ${data.route}\nBus: ₹${busPrice}\n${hasTrains ? `Train: ₹${trainPrice}\n` : ''}${hasFlights ? `Flight: ₹${flightPrice}\n` : ''}`)
+        setAiText(txt); setAiLoading(false)
+      }
     } catch (err: any) {
       setErrMsg(err.message); setLoading(false)
     }
@@ -160,42 +164,34 @@ export default function PricePilot() {
   const doSearch = async (q = query) => {
     if (!q.trim()) return
 
-    // Flash.co Style: If it's a URL, start brewing
     const isUrl = q.includes('.') && (q.startsWith('http') || q.includes('.com') || q.includes('.in'))
 
-    if (isUrl && mode === 'product') {
+    // Trigger brewing for ALL product searches for the "cool" factor
+    if (mode === 'product') {
       setBrewingQuery(q)
       setIsBrewing(true)
       return
     }
 
-    setLoading(true)
-    const fixed = await fixQuery(q)
-    if (fixed.toLowerCase() !== q.toLowerCase()) {
-      setCorrected(fixed)
-      setQuery(fixed)
+    // Travel brewing integration
+    const route = parseRoute(q, CITY_MAP, CITY_ALIASES)
+    if (!route) {
+      setErrMsg('Please enter a valid route, e.g. "Mumbai to Bangalore"')
+      return
     }
-
-    if (mode === 'product') {
-      runProduct(fixed)
-    } else {
-      const route = parseRoute(fixed, CITY_MAP, CITY_ALIASES)
-      if (!route) {
-        setErrMsg('Please enter a valid route, e.g. "Mumbai to Bangalore"')
-        setLoading(false)
-        return
-      }
-      setTravelReq({ origin: route.from, dest: route.to, date: new Date().toISOString().split('T')[0], members: 1 })
-    }
+    setBrewingQuery(q)
+    setTravelReq({ origin: route.from, dest: route.to, date: new Date().toISOString().split('T')[0], members: 1 })
   }
 
   const completeBrewing = async () => {
     setIsBrewing(false)
-    if (brewingQuery) {
+    if (!brewingQuery) return
+
+    if (mode === 'product') {
       runProduct(brewingQuery)
-    } else {
-      const bestMatch = PRODUCT_CARDS.find(c => c.id.includes('iphone')) || PRODUCT_CARDS[0]
-      clickCard(bestMatch)
+    } else if (travelReq) {
+      runTravel(brewingQuery, travelReq.date, travelReq.members)
+      setTravelReq(null)
     }
   }
 
@@ -415,8 +411,11 @@ export default function PricePilot() {
 
               <div style={{ display: 'flex', gap: 12 }}>
                 <button onClick={() => setTravelReq(null)} style={{ flex: 1, background: 'transparent', border: '1px solid var(--border)', borderRadius: 12, padding: 14, color: 'var(--text-dim)', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                <button onClick={() => { runTravel(query, travelReq.date, travelReq.members); setTravelReq(null) }}
-                  className="btn-primary" style={{ flex: 2, padding: 14, justifyContent: 'center' }}>Search Travels</button>
+                <button onClick={() => {
+                  setBrewingQuery(query || travelReq.origin + ' to ' + travelReq.dest);
+                  setIsBrewing(true);
+                }}
+                  className="btn-primary" style={{ flex: 2, padding: 14, justifyContent: 'center' }}>Analyze Route</button>
               </div>
             </motion.div>
           </motion.div>
