@@ -26,27 +26,26 @@ async function fetchProduct(q: string) {
   const res = await fetch(`/api/products?q=${encodeURIComponent(q)}`)
   const data = await res.json()
   if (!res.ok || data.error) throw new Error(data.error || 'Fetch failed')
-  return data
+  return { results: data.results || data.products, source: data.source || 'live' }
 }
 
 async function fetchFlights(origin: string, dest: string, dates: string[]) {
   const res = await fetch(`/api/flights?origin=${origin}&destination=${dest}&dates=${encodeURIComponent(dates.join(','))}`)
   const data = await res.json()
-  if (data.error) return null
-  // New format returns { flights: [...], prices: [...] }
-  return data.flights || data.prices || null
+  if (data.error) return { flights: null, source: 'estimated' }
+  return { flights: data.flights || data.prices || null, source: data.source || 'estimated' }
 }
 
 async function fetchTrains(from: string, to: string, date: string) {
   const res = await fetch(`/api/trains?from=${from}&to=${to}&date=${date}`)
   const data = await res.json()
-  return data.trains || null
+  return { trains: data.trains || null, source: data.source || 'estimated' }
 }
 
 async function fetchBuses(from: string, to: string, date: string) {
   const res = await fetch(`/api/buses?from=${from}&to=${to}&date=${date}`)
   const data = await res.json()
-  return data.buses || null
+  return { buses: data.buses || null, source: data.source || 'estimated' }
 }
 
 async function getAI(prompt: string) {
@@ -89,12 +88,14 @@ export default function PricePilot() {
   const [corrected, setCorrected] = useState<string | null>(null)
   const [isBrewing, setIsBrewing] = useState(false)
   const [brewingQuery, setBrewingQuery] = useState('')
+  const [resultSource, setResultSource] = useState<'live' | 'estimated' | null>(null)
 
   const runProduct = useCallback(async (q: string) => {
     setLoading(true); setResult(null); setSearchResults(null); setAiText(''); setErrMsg(''); setCorrected(null)
     try {
       const data = await fetchProduct(q)
-      setSearchResults(data.results || data.products)
+      setSearchResults(data.results)
+      setResultSource(data.source)
       setLoading(false)
     } catch (err: any) {
       setErrMsg(err.message); setLoading(false)
@@ -110,11 +111,18 @@ export default function PricePilot() {
       const from = CITY_MAP[route.from]
       const to = CITY_MAP[route.to]
 
-      const [trainData, flightData, busData] = await Promise.all([
+      const [trainResult, flightResult, busResult] = await Promise.all([
         fetchTrains(from.station, to.station, date.replace(/-/g, '')),
         fetchFlights(from.airport, to.airport, [date]),
         fetchBuses(route.from, route.to, date)
       ])
+
+      const trainData = trainResult.trains
+      const flightData = flightResult.flights
+      const busData = busResult.buses
+
+      // Determine overall source: 'live' if any source is live
+      const overallSource = [trainResult.source, flightResult.source, busResult.source].includes('live') ? 'live' : 'estimated'
 
       const hasTrains = !!trainData?.length
       const hasFlights = !!flightData?.length
@@ -139,7 +147,7 @@ export default function PricePilot() {
         from, to
       }
 
-      setResult({ type: 'travel', data, hasTrains, hasFlights })
+      setResult({ type: 'travel', data, hasTrains, hasFlights, source: overallSource })
       setLoading(false)
       setAiLoading(true)
       const txt = await getAI(`You are Price Pilot AI. 3-sentence travel booking insight for ${members} people on ${date}. No markdown.\nRoute: ${data.route}\nBus: ₹${busPrice}\n${hasTrains ? `Train: ₹${trainPrice}\n` : ''}${hasFlights ? `Flight: ₹${flightPrice}\n` : ''}`)
@@ -219,7 +227,7 @@ export default function PricePilot() {
       const storesCount = data.stores?.length || 0
       const score = Math.min(75 + (trend.trend === 'downward' ? 12 : 6) + Math.min(storesCount * 2, 10), 99)
 
-      setResult({ type: 'product', data, trend, confidence: score })
+      setResult({ type: 'product', data, trend, confidence: score, source: resp.source })
       setLoadingId(null)
 
       setAiLoading(true)
@@ -342,7 +350,8 @@ export default function PricePilot() {
                           history: makePriceHistory(clickedItem.price)
                         },
                         trend,
-                        confidence: clickedItem.isTrusted ? 95 : 65
+                        confidence: clickedItem.isTrusted ? 95 : 65,
+                        source: resultSource || 'live'
                       })
                     } else {
                       clickCard(clickedItem)

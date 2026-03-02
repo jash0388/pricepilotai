@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const OPENAI_KEY = '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'
+const OPENAI_KEY = process.env.OPENAI_API_KEY || ''
 
 export async function POST(req: NextRequest) {
     try {

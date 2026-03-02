@@ -11,14 +11,14 @@ async function fetchProduct(q: string) {
     const res = await fetch(`/api/products?q=${encodeURIComponent(q)}`)
     const data = await res.json()
     if (!res.ok || data.error) throw new Error(data.error || 'Fetch failed')
-    return data
+    return { results: data.results || data.products, source: data.source || 'live' }
 }
 
 async function scrapeUrl(url: string) {
     try {
         const res = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`)
         const data = await res.json()
-        return data
+        return { ...data, source: data.source || 'live' }
     } catch {
         return null
     }
@@ -111,7 +111,7 @@ export default function URLInterceptorPage() {
             const storesCount = data.stores?.length || 0
             const score = Math.min(75 + (trend.trend === 'downward' ? 12 : 6) + Math.min(storesCount * 2, 10), 99)
 
-            setResult({ type: 'product', data, trend, confidence: score })
+            setResult({ type: 'product', data, trend, confidence: score, source: resp.source })
 
             setAiLoading(true)
             const txt = await getAI(`You are Price Pilot AI. 3-sentence product insight, clear buy/wait recommendation. No markdown.\nProduct: ${data.name}\nBest price: ₹${data.currentPrice.toLocaleString()}\nStore: ${data.stores[0]?.name}\nTrend: ${trend.trend}`)

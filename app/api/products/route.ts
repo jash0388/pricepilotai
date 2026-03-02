@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const SERP_KEY = '9d259f5b72bc8bac35f6e2a76be3d62b0ec48b22ec699b91ff1f798df922db83'
+const SERP_KEY = process.env.SERP_KEY || ''
 
 const TRUSTED = ['amazon', 'flipkart', 'myntra', 'samsung', 'apple', 'reliance digital', 'croma', 'tata cliq', 'ajio', 'jiomart']
+
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get('q')
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
         return a.price - b.price
       })
 
-    return NextResponse.json({ results: results.slice(0, 15) })
+    return NextResponse.json({ results: results.slice(0, 15), source: 'live' })
   } catch (err: any) {
     console.error('Product API Error:', err.message)
     // Fallback data for a better UX if API fails
@@ -61,6 +62,6 @@ export async function GET(req: NextRequest) {
       { id: 'fb-1', name: q + ' (Standard Edition)', price: 45000, store: 'Amazon', isTrusted: true, thumbnail: '' },
       { id: 'fb-2', name: q + ' (Premium Pack)', price: 48000, store: 'Flipkart', isTrusted: true, thumbnail: '' }
     ]
-    return NextResponse.json({ results: fallbackResults })
+    return NextResponse.json({ results: fallbackResults, source: 'estimated' })
   }
 }

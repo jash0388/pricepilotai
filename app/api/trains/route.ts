@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const RAILWAY_KEY = process.env.RAILWAY_KEY
+const SERP_KEY = process.env.SERP_KEY || ''
 
 // Realistic fallback trains for popular Indian routes
 const FALLBACK_TRAINS: Record<string, any[]> = {
@@ -38,6 +39,91 @@ const FALLBACK_TRAINS: Record<string, any[]> = {
     { name: 'Mumbai Express', number: '17032', departure: '13:05', arrival: '06:10', price: 580, class: 'SL' },
     { name: 'Konark Express', number: '11020', departure: '22:35', arrival: '15:30', price: 750, class: '3A' },
   ],
+  // Delhi-Mumbai
+  'NDLS-CSTM': [
+    { name: 'Rajdhani Express', number: '12951', departure: '16:55', arrival: '08:35', price: 3200, class: '3A' },
+    { name: 'August Kranti Rajdhani', number: '12953', departure: '17:40', arrival: '10:15', price: 2900, class: '3A' },
+    { name: 'Golden Temple Mail', number: '12903', departure: '21:25', arrival: '22:30', price: 680, class: 'SL' },
+    { name: 'Paschim Express', number: '12925', departure: '16:05', arrival: '19:40', price: 720, class: 'SL' },
+  ],
+  // Bangalore-Delhi
+  'SBC-NDLS': [
+    { name: 'Rajdhani Express', number: '22691', departure: '20:00', arrival: '06:50', price: 3500, class: '3A' },
+    { name: 'Karnataka Express', number: '12627', departure: '19:20', arrival: '06:05', price: 850, class: 'SL' },
+    { name: 'Sampark Kranti', number: '12649', departure: '22:30', arrival: '08:55', price: 780, class: 'SL' },
+  ],
+  // Hyderabad-Delhi
+  'SC-NDLS': [
+    { name: 'Telangana Express', number: '12723', departure: '06:25', arrival: '08:15', price: 720, class: 'SL' },
+    { name: 'Dakshin Express', number: '12721', departure: '10:45', arrival: '12:30', price: 680, class: 'SL' },
+    { name: 'Rajdhani Express', number: '12437', departure: '17:15', arrival: '09:50', price: 3100, class: '3A' },
+  ],
+  // Chennai-Bangalore
+  'MAS-SBC': [
+    { name: 'Shatabdi Express', number: '12007', departure: '06:00', arrival: '10:50', price: 680, class: 'CC' },
+    { name: 'Double Decker', number: '12265', departure: '07:45', arrival: '13:30', price: 780, class: 'CC' },
+    { name: 'Brindavan Express', number: '12639', departure: '07:50', arrival: '13:45', price: 180, class: '2S' },
+    { name: 'Lalbagh Express', number: '12607', departure: '06:15', arrival: '11:15', price: 200, class: '2S' },
+  ],
+  // Hyderabad-Bangalore
+  'SC-SBC': [
+    { name: 'Kacheguda Express', number: '17604', departure: '18:15', arrival: '06:30', price: 420, class: 'SL' },
+    { name: 'Rayalaseema Express', number: '17406', departure: '20:00', arrival: '08:15', price: 480, class: 'SL' },
+    { name: 'Garib Rath', number: '12786', departure: '22:00', arrival: '07:30', price: 750, class: '3A' },
+  ],
+}
+
+// SerpAPI-based train search via Google
+async function searchTrainsViaSerpAPI(fromStation: string, toStation: string, date: string) {
+  if (!SERP_KEY) return null
+
+  try {
+    const query = `trains from ${fromStation} to ${toStation} ${date} IRCTC fare`
+    const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(query)}&gl=in&hl=en&api_key=${SERP_KEY}`
+    const res = await fetch(url, { next: { revalidate: 600 } })
+    if (!res.ok) return null
+
+    const data = await res.json()
+    const trains: any[] = []
+    const results = [...(data.organic_results || []), ...(data.answer_box ? [data.answer_box] : [])]
+
+    for (const r of results) {
+      const snippet = (r.snippet || r.answer || r.description || '')
+      const title = (r.title || '')
+
+      // Look for train number patterns (5 digits)
+      const trainNumMatches = snippet.match(/\b(\d{5})\b/g) || []
+      // Look for price patterns
+      const priceMatches = snippet.match(/(?:₹|rs\.?\s*|inr\s*)(\d[\d,]*)/gi) || []
+
+      if (trainNumMatches.length > 0 && priceMatches.length > 0) {
+        const price = parseInt(priceMatches[0].replace(/[^0-9]/g, ''), 10)
+        if (price > 50 && price < 15000) {
+          // Try to extract train name
+          const nameMatch = snippet.match(/([A-Z][a-zA-Z\s]+Express|[A-Z][a-zA-Z\s]+Rajdhani|[A-Z][a-zA-Z\s]+Shatabdi|[A-Z][a-zA-Z\s]+Mail|[A-Z][a-zA-Z\s]+Duronto)/i)
+          trains.push({
+            name: nameMatch ? nameMatch[1].trim() : `Train ${trainNumMatches[0]}`,
+            number: trainNumMatches[0],
+            departure: '',
+            arrival: '',
+            price,
+            class: price > 2000 ? '3A' : price > 500 ? 'SL' : '2S',
+          })
+        }
+      }
+    }
+
+    // Deduplicate by train number
+    const unique = trains.reduce((acc: any[], t: any) => {
+      if (!acc.some(x => x.number === t.number)) acc.push(t)
+      return acc
+    }, [])
+
+    return unique.length > 0 ? unique.sort((a, b) => a.price - b.price) : null
+  } catch (err) {
+    console.error('SerpAPI Train search error:', err)
+    return null
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -47,7 +133,7 @@ export async function GET(req: NextRequest) {
 
   if (!from || !to || !date) return NextResponse.json({ error: 'Missing params' }, { status: 400 })
 
-  // Try live API first
+  // Source 1: Try live Railway API
   if (RAILWAY_KEY && RAILWAY_KEY !== 'YOUR_RAILWAYAPI_KEY') {
     try {
       const res = await fetch(
@@ -69,7 +155,7 @@ export async function GET(req: NextRequest) {
           .sort((a: any, b: any) => a.price - b.price)
 
         if (trains.length > 0) {
-          return NextResponse.json({ trains })
+          return NextResponse.json({ trains, source: 'live' })
         }
       }
     } catch (err: any) {
@@ -77,7 +163,17 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Fallback: use realistic route-specific data
+  // Source 2: Try SerpAPI Google search for train info
+  try {
+    const serpTrains = await searchTrainsViaSerpAPI(from, to, date)
+    if (serpTrains && serpTrains.length > 0) {
+      return NextResponse.json({ trains: serpTrains, source: 'live' })
+    }
+  } catch (err) {
+    console.error('SerpAPI Train Error:', err)
+  }
+
+  // Source 3: Fallback — realistic route-specific data
   const routeKey = `${from}-${to}`
   const reverseKey = `${to}-${from}`
   const fallback = FALLBACK_TRAINS[routeKey] || FALLBACK_TRAINS[reverseKey] || FALLBACK_TRAINS.default
@@ -88,5 +184,5 @@ export async function GET(req: NextRequest) {
     price: Math.round(t.price * (0.95 + Math.random() * 0.1)),
   })).sort((a, b) => a.price - b.price)
 
-  return NextResponse.json({ trains })
+  return NextResponse.json({ trains, source: 'estimated' })
 }

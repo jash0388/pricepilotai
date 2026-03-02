@@ -1,6 +1,6 @@
 'use client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, TrendingDown, TrendingUp, ExternalLink, BrainCircuit } from 'lucide-react'
+import { X, TrendingDown, TrendingUp, ExternalLink, BrainCircuit, Wifi, WifiOff } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatPrice } from '@/lib/utils'
 
@@ -58,7 +58,23 @@ export default function DetailSheet({ result, aiText, aiLoading, onClose, travel
                     boxShadow: '0 -20px 80px rgba(0,0,0,0.1)'
                 }}
             >
-                <div style={{ width: 48, height: 5, background: 'rgba(0,0,0,0.08)', borderRadius: 10, margin: '0 auto 40px' }} />
+                <div style={{ width: 48, height: 5, background: 'rgba(0,0,0,0.08)', borderRadius: 10, margin: '0 auto 24px' }} />
+
+                {/* Data Source Badge */}
+                {result.source && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+                        <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            background: result.source === 'live' ? '#E6F9F1' : '#FFF9E6',
+                            color: result.source === 'live' ? '#059669' : '#D97706',
+                            padding: '6px 14px', borderRadius: 100,
+                            fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase'
+                        }}>
+                            {result.source === 'live' ? <Wifi size={13} /> : <WifiOff size={13} />}
+                            {result.source === 'live' ? 'Live Data' : 'Estimated Prices'}
+                        </div>
+                    </div>
+                )}
 
                 <button
                     onClick={onClose}
