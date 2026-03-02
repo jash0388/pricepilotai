@@ -305,6 +305,7 @@ export default function PricePilot() {
                 setQuery={setQuery}
                 loading={loading}
                 doSearch={doSearch}
+                hideSuggestions={true}
               />
             </div>
           </div>
