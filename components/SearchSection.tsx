@@ -80,9 +80,9 @@ export default function SearchSection({ mode, query, setQuery, loading, doSearch
                 </div>
             </div>
 
-            {!hideSuggestions && (
+            {hideSuggestions !== true && (
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 48, marginBottom: 80 }}>
-                    <span style={{ fontSize: 13, color: '#999', alignSelf: 'center', marginRight: 8 }}>Suggested:</span>
+                    <span style={{ fontSize: 13, color: '#999', alignSelf: 'center', marginRight: 8 }}>Shortcuts:</span>
                     {exampleSearches.map(s => (
                         <motion.button
                             key={s}
