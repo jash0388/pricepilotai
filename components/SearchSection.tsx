@@ -8,9 +8,10 @@ interface SearchSectionProps {
     setQuery: (q: string) => void
     loading: boolean
     doSearch: (q?: string) => void
+    hideSuggestions?: boolean
 }
 
-export default function SearchSection({ mode, query, setQuery, loading, doSearch }: SearchSectionProps) {
+export default function SearchSection({ mode, query, setQuery, loading, doSearch, hideSuggestions }: SearchSectionProps) {
     const exampleSearches = mode === 'product'
         ? ['iPhone 15', 'Samsung Galaxy S24', 'MacBook Air M2', 'AirPods Pro 2', 'Sony WH-1000XM5']
         : ['Hyderabad Tirupati', 'Mumbai Goa', 'Delhi Jaipur']
@@ -28,7 +29,7 @@ export default function SearchSection({ mode, query, setQuery, loading, doSearch
 
     return (
         <section>
-            <div style={{ position: 'relative', maxWidth: 680, margin: '0 auto 48px' }}>
+            <div style={{ position: 'relative', maxWidth: 680, margin: '0 auto' }}>
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -79,30 +80,32 @@ export default function SearchSection({ mode, query, setQuery, loading, doSearch
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 80 }}>
-                <span style={{ fontSize: 13, color: '#999', alignSelf: 'center', marginRight: 8 }}>Suggested:</span>
-                {exampleSearches.map(s => (
-                    <motion.button
-                        key={s}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => doSearch(s)}
-                        style={{
-                            background: '#FFFFFF',
-                            border: '1px solid rgba(0,0,0,0.06)',
-                            borderRadius: 100,
-                            padding: '10px 24px',
-                            color: '#666',
-                            fontSize: 14,
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                            fontWeight: 500
-                        }}
-                    >
-                        {s}
-                    </motion.button>
-                ))}
-            </div>
+            {!hideSuggestions && (
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 48, marginBottom: 80 }}>
+                    <span style={{ fontSize: 13, color: '#999', alignSelf: 'center', marginRight: 8 }}>Suggested:</span>
+                    {exampleSearches.map(s => (
+                        <motion.button
+                            key={s}
+                            whileHover={{ y: -2 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => doSearch(s)}
+                            style={{
+                                background: '#FFFFFF',
+                                border: '1px solid rgba(0,0,0,0.06)',
+                                borderRadius: 100,
+                                padding: '10px 24px',
+                                color: '#666',
+                                fontSize: 14,
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                                fontWeight: 500
+                            }}
+                        >
+                            {s}
+                        </motion.button>
+                    ))}
+                </div>
+            )}
         </section>
     )
 }
