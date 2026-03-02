@@ -12,6 +12,8 @@ interface SearchSectionProps {
 }
 
 export default function SearchSection({ mode, query, setQuery, loading, doSearch, hideSuggestions }: SearchSectionProps) {
+    // Explicitly check for boolean true
+    const shouldHide = hideSuggestions === true;
     const exampleSearches = mode === 'product'
         ? ['iPhone 15', 'Samsung Galaxy S24', 'MacBook Air M2', 'AirPods Pro 2', 'Sony WH-1000XM5']
         : ['Hyderabad Tirupati', 'Mumbai Goa', 'Delhi Jaipur']
@@ -80,7 +82,7 @@ export default function SearchSection({ mode, query, setQuery, loading, doSearch
                 </div>
             </div>
 
-            {hideSuggestions !== true && (
+            {!shouldHide && (
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 48, marginBottom: 80 }}>
                     <span style={{ fontSize: 13, color: '#999', alignSelf: 'center', marginRight: 8 }}>Shortcuts:</span>
                     {exampleSearches.map(s => (

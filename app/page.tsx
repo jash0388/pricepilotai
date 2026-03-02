@@ -297,7 +297,7 @@ export default function PricePilot() {
             </div>
           </>
         ) : (
-          <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg)', padding: '20px 0', borderBottom: '1px solid var(--border)', marginBottom: 40 }}>
+          <div style={{ position: 'sticky', top: 70, zIndex: 100, background: 'var(--bg)', padding: '20px 0', borderBottom: '1px solid var(--border)', marginBottom: 40 }}>
             <div style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px' }}>
               <SearchSection
                 mode={mode}
