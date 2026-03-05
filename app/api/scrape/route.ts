@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { scrapeWithBrowserUse } from '@/lib/browser-use'
 
 /**
  * Scrapes a product page to extract real title, image, price, and rating
@@ -9,6 +10,20 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(req: NextRequest) {
     const url = req.nextUrl.searchParams.get('url')
     if (!url) return NextResponse.json({ error: 'Missing url' }, { status: 400 })
+
+    const lowerUrl = url.toLowerCase()
+
+    // Check if the URL is from one of the major stores where simple fetch might fail
+    const isMajorStore = ['amazon', 'flipkart', 'myntra', 'meesho', 'ajio', 'croma', 'jiomart', 'nykaa', 'snapdeal', 'reliancedigital'].some(store => lowerUrl.includes(store));
+
+    // If it's a major store, try high-fidelity scraping first (if API key is available)
+    if (isMajorStore && process.env.BROWSER_USE_API_KEY) {
+        const browserRes = await scrapeWithBrowserUse(url);
+        if (browserRes.title && !browserRes.error) {
+            browserRes.source = 'browser-use';
+            return NextResponse.json(browserRes);
+        }
+    }
 
     try {
         const res = await fetch(url, {
